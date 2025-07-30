@@ -281,6 +281,12 @@ class Guild {
     this.features = data.features || this.features || [];
 
     /**
+     * Les données du clan
+     * @type {string}
+    */
+    this.profile = data.profile ?? null;
+
+    /**
      * The ID of the rules channel for the guild
      * <info>This is only available on guilds with the `PUBLIC` feature</info>
      * @type {?Snowflake}
