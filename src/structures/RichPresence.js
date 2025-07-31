@@ -37,6 +37,7 @@ class CustomStatus {
          * @type {?string}
          */
         this.state = null;
+        this.details = null;
         this.setup(data);
     }
     /**
@@ -47,6 +48,7 @@ class CustomStatus {
     setup(data) {
         this.emoji = data.emoji ? resolvePartialEmoji(data.emoji) : null;
         this.state = data.state;
+        this.details = data.details;
     }
     /**
      * Set the emoji of this activity
@@ -68,6 +70,16 @@ class CustomStatus {
     }
 
     /**
+     * The details of the activity
+     * * @param {string | null} details The details to be displayed
+     * @returns {CustomStatus} 
+    */
+    setDetails(details) {
+        this.details = details;
+        return this;
+    }
+
+    /**
      * Returns an object that can be used to set the status
      * @returns {CustomStatus}
      */
@@ -77,6 +89,7 @@ class CustomStatus {
             name: this.name,
             emoji: this.emoji,
             type: this.type,
+            details: this.details,
             state: this.state,
         };
     }
@@ -87,6 +100,7 @@ class CustomStatus {
             name: this.name,
             emoji: this.emoji,
             type: this.type,
+            details: this.details,
             state: this.state,
         }
     }
