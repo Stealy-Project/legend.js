@@ -12,6 +12,8 @@ const Util = require('../util/Util');
 const Snowflake = require('../util/Snowflake');
 const SystemChannelFlags = require('../util/SystemChannelFlags');
 const SnowflakeUtil = require('../util/Snowflake');
+const GuildTemplate = require('legend.js/src/structures/GuildTemplate');
+const Sticker = require('./Sticker');
 
 /**
  * Represents a guild (or a server) on Discord.
@@ -45,6 +47,14 @@ class Guild {
      * @type {Collection<Snowflake, Role>}
      */
     this.roles = new Collection();
+
+    /**
+     * A collection of stickers that are in this guild. The key is the role's ID, the value is the role
+     * @type {Collection<Sticker>}
+     */
+    this.stickers = new Collection();
+
+    
 
     /**
      * A collection of presences in this guild
@@ -323,6 +333,14 @@ class Guild {
       for (const role of data.roles) {
         const newRole = new Role(this, role);
         this.roles.set(newRole.id, newRole);
+      }
+    }
+
+    if (data.stickers) {
+      this.stickers.clear();
+      for (const stickers of data.stickers) {
+        const stickerData = new Sticker(this, stickers);
+        this.stickers.set(stickers.id, stickerData);
       }
     }
 
@@ -953,6 +971,8 @@ class Guild {
     return this.client.rest.methods.putGuildMember(this, user, options);
   }
 
+  
+
   /**
    * Fetch a single guild member from a user.
    * @param {UserResolvable} user The user to fetch the member for
@@ -1153,6 +1173,23 @@ class Guild {
   search(options = {}) {
     return this.client.rest.methods.search(this, options);
   }
+
+  /**
+   * Crée une template d'un serveur
+   * @param {Object<string>} [options={}] Options de la templatee
+   * @returns {Promise<GuildTemplate>}
+   * @deprecated
+   * @example
+   * guild.createTemplate({
+   *   name: 'Stealy',
+   *   description: 'Just a boring description'
+   * })
+   *   .then(res => res.code)
+   *   .catch(console.error);
+   */
+  createTemplate(options = { name: 'Stealy', description: 'Backup made by Stealy' }) {
+    return this.client.rest.methods.createTemplate(this, options);
+  }  
 
   /**
    * The data for editing a guild.
@@ -1430,9 +1467,6 @@ class Guild {
     else return settings.addRestrictedGuild(this);
   }
 
-  createTemplate(data) {
-    return this.client.rest.methods.createTemplate(this, data);
-  }
 
   /**
    * Bans a user from the guild.
@@ -1638,6 +1672,30 @@ class Guild {
    */
   createRole(data = {}, reason) {
     return this.client.rest.methods.createGuildRole(this, data, reason);
+  }
+
+  /**
+   * Creates a new sticker in the guild.
+   * @param {Object} data The data for the sticker
+   * @param {string} data.name The name of the sticker
+   * @param {string} data.description The description of the sticker
+   * @param {string} data.tags The tags for the sticker
+   * @param {BufferResolvable|Base64Resolvable} data.file The file for the sticker
+   * @param {string} [reason] Reason for creating the sticker
+   * @returns {Promise<Sticker>} The created sticker
+   * @example
+   * // Create a new sticker
+   * guild.createSticker({
+   *   name: 'My Sticker',
+   *   description: 'A cool sticker',
+   *   tags: 'cool,awesome',
+   *   file: './path/to/sticker.png'
+   * })
+   *   .then(sticker => console.log(`Created new sticker with name ${sticker.name}`))
+   *   .catch(console.error);
+   */
+  createSticker(data = {}, reason) {
+    return this.client.rest.methods.createGuildSticker(this, data, reason);
   }
 
   /**

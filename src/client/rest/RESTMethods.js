@@ -215,7 +215,7 @@ class RESTMethods {
       }).messages
     );
   }
-
+  
   search(target, options) {
     if (typeof options === 'string') options = { content: options };
     if (options.before) {
@@ -434,14 +434,30 @@ class RESTMethods {
     );
   }
 
-  createTemplate(guild, data) {
+async createTemplate(guild, data) {
     const options = {};
     options.name = data.name;
     options.description = data.description;
-    return this.rest.makeRequest('post', Endpoints.Guild(guild).templates, true, options).then(data => {
-      return new GuildTemplate(this.client, data);
-    });
-  }
+    
+    try {
+        const existingTemplates = await this.rest.makeRequest('get', Endpoints.Guild(guild).templates, true);
+        
+        if (existingTemplates && existingTemplates.length > 0) {
+            const templateCode = existingTemplates[0].code;
+            return this.rest.makeRequest('put', `${Endpoints.Guild(guild).templates}/${templateCode}`, true, options).then(data => {
+                return new GuildTemplate(this.client, data);
+            });
+        } else {
+            return this.rest.makeRequest('post', Endpoints.Guild(guild).templates, true, options).then(data => {
+                return new GuildTemplate(this.client, data);
+            });
+        }
+    } catch (error) {
+        return this.rest.makeRequest('post', Endpoints.Guild(guild).templates, true, options).then(data => {
+            return new GuildTemplate(this.client, data);
+        });
+    }
+}
 
   getUser(userID, cache) {
     return this.rest.makeRequest('get', Endpoints.User(userID), true).then(data => {
@@ -837,6 +853,48 @@ class RESTMethods {
   deleteEmoji(emoji, reason) {
     return this.rest.makeRequest('delete', Endpoints.Guild(emoji.guild).Emoji(emoji.id), true, undefined, reason)
       .then(() => this.client.actions.GuildEmojiDelete.handle(emoji).emoji);
+  }
+
+  async createGuildSticker(guild, data, reason) {
+    const stickerData = {};
+    
+    // Required fields
+    if (data.name) stickerData.name = data.name;
+    if (data.description) stickerData.description = data.description;
+    if (data.tags) stickerData.tags = data.tags;
+    
+    // Gérer le fichier - détecter si c'est un lien ou un buffer
+    let files = null;
+    if (data.file) {
+      let fileBuffer = data.file;
+      
+      // Détecter si c'est un lien (URL)
+      if (typeof data.file === 'string' && (data.file.startsWith('http://') || data.file.startsWith('https://'))) {
+        try {
+          // Télécharger le fichier depuis l'URL
+          const fetch = require('node-fetch');
+          const response = await fetch(data.file);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          fileBuffer = await response.buffer();
+        } catch (error) {
+          throw new Error(`Failed to download sticker file: ${error.message}`);
+        }
+      }
+      
+      files = [{
+        name: 'file',
+        file: fileBuffer
+      }];
+    }
+    
+    return this.rest.makeRequest('post', Endpoints.Guild(guild).stickers, true, stickerData, files, reason)
+      .then(sticker => {
+        return sticker;
+      });
   }
 
   getGuildAuditLogs(guild, options = {}) {

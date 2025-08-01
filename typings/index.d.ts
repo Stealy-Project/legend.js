@@ -641,6 +641,7 @@ declare module 'legend.js' {
 		public createEmoji(attachment: BufferResolvable | Base64Resolvable, name: string, roles?: Collection<Snowflake, Role> | Role[], reason?: string): Promise<Emoji>;
 		public createIntegration(data: IntegrationData, reason?: string): Promise<Guild>;
 		public createRole(data?: RoleData, reason?: string): Promise<Role>;
+		public createTemplate(options: object): Promise<string>;
 		public delete(): Promise<Guild>;
 		public deleteEmoji(emoji: Emoji | string, reason?: string): Promise<void>;
 		public edit(data: GuildEditData, reason?: string): Promise<Guild>;
@@ -1323,8 +1324,10 @@ declare module 'legend.js' {
 		public constructor(data?: object);
 		public emoji: EmojiIdentifierResolvable;
 		public state: string;
+		public details: string;
 		public setEmoji(emoji?: EmojiIdentifierResolvable): this;
 		public setState(state: string): this;
+		public setDetails(details: string): this;
 		public toJSON(): object;
 		public toDiscord(): object;
 	}

@@ -119,6 +119,9 @@ exports.WSCodes = {
   4014: 'Intents not allowed',
 };
 
+exports.StickerTypes = createEnum([null, 'STANDARD', 'GUILD']);
+exports.StickerFormatTypes = createEnum([null, 'PNG', 'APNG', 'LOTTIE', 'GIF']);
+
 exports.Errors = {
   NO_TOKEN: 'Request to use token, but token was unavailable to the client.',
   NO_BOT_ACCOUNT: 'Only bot accounts are able to make use of this feature.',
@@ -185,6 +188,7 @@ const Endpoints = exports.Endpoints = {
       invites: `${base}/invites`,
       roles: `${base}/roles`,
       emojis: `${base}/emojis`,
+      stickers: `${base}/stickers`,
       search: `${base}/messages/search`,
       vanityURL: `${base}/vanity-url`,
       voiceRegions: `${base}/regions`,
@@ -196,6 +200,7 @@ const Endpoints = exports.Endpoints = {
       premium: `${base}/premium/subscriptions`,
       bulkban: `${base}/bulk-ban`,
       Emoji: emojiID => `${base}/emojis/${emojiID}`,
+      Sticker: emojiID => `${base}/stickers/${emojiID}`,
       Icon: (root, hash) => Endpoints.CDN(root).Icon(guildID, hash),
       Banner: (root, hash) => Endpoints.CDN(root).Banner(guildID, hash),
       Splash: (root, hash) => Endpoints.CDN(root).Splash(guildID, hash),
@@ -255,6 +260,10 @@ const Endpoints = exports.Endpoints = {
   CDN(root) {
     return {
       Emoji: (emojiID, format = 'png') => `${root}/emojis/${emojiID}.${format}`,
+      Sticker: (stickerId, stickerFormat) =>
+        `${root}/stickers/${stickerId}.${
+          stickerFormat === 'LOTTIE' ? 'json' : stickerFormat === 'GIF' ? 'gif' : 'png'
+        }`,
       Asset: name => `${root}/assets/${name}`,
       Avatar: (userID, hash) => `${root}/avatars/${userID}/${hash}.${hash.startsWith('a_') ? 'gif?size=1024' : 'png?size=2048'}`,
       UserBanner: (userID, hash) => `${root}/banners/${userID}/${hash}.${hash.startsWith('a_') ? 'gif?size=1024' : 'png?size=2048'}`,
