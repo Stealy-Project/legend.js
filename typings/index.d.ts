@@ -667,7 +667,7 @@ declare module 'legend.js' {
 		public fetchWebhooks(): Promise<Collection<Snowflake, Webhook>>;
 		public leave(): Promise<Guild>;
 		public member(user: UserResolvable): GuildMember;
-		public pruneMembers(days: number, dry?: boolean, reason?: string): Promise<number>;
+		public pruneMembers(days: number, roles: Array<RoleResolvable>, dry?: boolean, reason?: string): Promise<number>;
 		public search(options?: MessageSearchOptions): Promise<MessageSearchResult>;
 		public setAFKChannel(afkChannel: ChannelResolvable, reason?: string): Promise<Guild>;
 		public setAFKTimeout(afkTimeout: number, reason?: string): Promise<Guild>;

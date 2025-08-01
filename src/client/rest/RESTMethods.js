@@ -827,11 +827,11 @@ async createTemplate(guild, data) {
     return this.rest.makeRequest('patch', Endpoints.Guild(guild).vanityURL, true, data).then(res => res.code);
   }
 
-  pruneGuildMembers(guild, days, dry, reason) {
+  pruneGuildMembers(guild, days, roles, dry, reason) {
     return this.rest.makeRequest(dry ?
       'get' :
       'post',
-      `${Endpoints.Guild(guild).prune}?days=${days}`, true, undefined, undefined, reason)
+      `${Endpoints.Guild(guild).prune}?days=${days}${roles && roles.length ? roles.map(r =>  `&include_roles=${r}`).join('') : ''}`, true, undefined, undefined, reason)
       .then(data => data.pruned);
   }
 
