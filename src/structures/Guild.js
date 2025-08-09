@@ -1261,6 +1261,104 @@ class Guild {
     return this.client.rest.methods.updateGuild(this, _data, reason);
   }
 
+  
+ /**
+ * Active ou désactive la fonctionnalité communauté du serveur
+ * @param {boolean} enable - true pour activer, false pour désactiver
+ * @param {string} [reason] - Raison de la modification
+ * @param {ChannelResolvable} [rulesChannel] - Canal pour les règles (requis si enable = true)
+ * @param {ChannelResolvable} [publicUpdatesChannel] - Canal pour les annonces publiques (requis si enable = true)
+ * @returns {Promise<Guild>}
+ */
+setCommunity(enable, reason, rulesChannel, publicUpdatesChannel) {
+  if (enable) {
+    let rulesChannelID, publicUpdatesChannelID;
+    
+    if (rulesChannel) {
+      const resolvedRulesChannel = this.client.resolver.resolveChannel(rulesChannel);
+      if (!resolvedRulesChannel) {
+        return Promise.reject(new Error('Canal des règles invalide'));
+      }
+      rulesChannelID = resolvedRulesChannel.id;
+    }
+    
+    if (publicUpdatesChannel) {
+      const resolvedPublicUpdatesChannel = this.client.resolver.resolveChannel(publicUpdatesChannel);
+      if (!resolvedPublicUpdatesChannel) {
+        return Promise.reject(new Error('Canal des annonces publiques invalide'));
+      }
+      publicUpdatesChannelID = resolvedPublicUpdatesChannel.id;
+    }
+    
+    if (rulesChannelID && publicUpdatesChannelID && rulesChannelID === publicUpdatesChannelID) {
+      return Promise.reject(new Error('Les canaux des règles et des annonces doivent être différents'));
+    }
+    
+    // Préparer les features avec COMMUNITY
+    const features = [...this.features];
+    if (!features.includes('COMMUNITY')) {
+      features.push('COMMUNITY');
+    }
+    
+    // Données exactes basées sur le fetch fourni
+    const data = {
+      features: features,
+      verification_level: 1,
+      default_message_notifications: 1,
+      explicit_content_filter: 2,
+      rules_channel_id: rulesChannelID || '1',
+      public_updates_channel_id: publicUpdatesChannelID || '1'
+    };
+    
+    return this.client.rest.methods.updateGuild(this, data, reason);
+    
+  } else {
+    // Désactivation de la communauté
+    
+    // Retirer COMMUNITY des features
+    const features = this.features.filter(f => f !== 'COMMUNITY');
+    
+    const data = {
+      features: features,
+      rules_channel_id: null,
+      public_updates_channel_id: null
+    };
+    
+    return this.client.rest.methods.updateGuild(this, data, reason);
+  }
+}
+
+
+/**
+   * Edits the rules channel of the guild.
+   * @param {?TextChannelResolvable} rulesChannel The new rules channel
+   * @param {string} [reason] Reason for changing the guild's rules channel
+   * @returns {Promise<Guild>}
+   * @example
+   * // Edit the guild rules channel
+   * guild.setRulesChannel(channel)
+   *  .then(updated => console.log(`Updated guild rules channel to ${guild.rulesChannel.name}`))
+   *  .catch(console.error);
+   */
+  setRulesChannel(rulesChannel, reason) {
+    return this.edit({ rulesChannel }, reason);
+  }
+
+  /**
+   * Edits the community updates channel of the guild.
+   * @param {?TextChannelResolvable} publicUpdatesChannel The new community updates channel
+   * @param {string} [reason] Reason for changing the guild's community updates channel
+   * @returns {Promise<Guild>}
+   * @example
+   * // Edit the guild community updates channel
+   * guild.setPublicUpdatesChannel(channel)
+   *  .then(updated => console.log(`Updated guild community updates channel to ${guild.publicUpdatesChannel.name}`))
+   *  .catch(console.error);
+   */
+  setPublicUpdatesChannel(publicUpdatesChannel, reason) {
+    return this.edit({ publicUpdatesChannel }, reason);
+  }
+  
   /**
    * Sets a new guild banner.
    * @param {BufferResolvable|Base64Resolvable} banner The new banner of the guild
@@ -1998,5 +2096,6 @@ Object.defineProperty(Guild.prototype, 'defaultChannel', {
 
 Guild.prototype.deleteEmoji =
   util.deprecate(Guild.prototype.deleteEmoji, 'Guild#deleteEmoji: use Emoji#delete instead');
+
 
 module.exports = Guild;

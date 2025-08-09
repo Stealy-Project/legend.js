@@ -153,6 +153,8 @@ class User {
         tag: data.clan?.tag ?? null,
         badge: data.clan?.badge ?? null,
       };
+	  
+	  this.primaryGuild = data.primaryGuild ?? null
   }
 
   patch(data) {
